@@ -1,0 +1,135 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * JARVIS design system — cinematic dark AI OS.
+ * All colors are oklch semantic tokens. Never hardcode colors in components.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-glass: var(--glass);
+  --color-hud: var(--hud);
+  --color-hud-dim: var(--hud-dim);
+  --color-core: var(--core);
+  --color-core-hot: var(--core-hot);
+  --color-violet: var(--violet);
+  --color-warn: var(--warn);
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.13 0.015 260);
+  --foreground: oklch(0.95 0.012 220);
+  --card: oklch(0.19 0.02 258 / 55%);
+  --card-foreground: oklch(0.95 0.012 220);
+  --popover: oklch(0.17 0.02 258 / 88%);
+  --popover-foreground: oklch(0.95 0.012 220);
+  --primary: oklch(0.82 0.13 216);
+  --primary-foreground: oklch(0.16 0.02 250);
+  --secondary: oklch(0.26 0.025 258 / 70%);
+  --secondary-foreground: oklch(0.93 0.012 220);
+  --muted: oklch(0.24 0.02 258 / 60%);
+  --muted-foreground: oklch(0.66 0.025 235);
+  --accent: oklch(0.72 0.14 292);
+  --accent-foreground: oklch(0.96 0.01 250);
+  --destructive: oklch(0.66 0.17 32);
+  --destructive-foreground: oklch(0.97 0.01 250);
+  --border: oklch(0.72 0.06 220 / 14%);
+  --input: oklch(0.72 0.06 220 / 18%);
+  --ring: oklch(0.82 0.13 216 / 55%);
+
+  --glass: oklch(0.22 0.02 258 / 42%);
+  --hud: oklch(0.88 0.09 210);
+  --hud-dim: oklch(0.62 0.04 225);
+  --core: oklch(0.85 0.12 214);
+  --core-hot: oklch(0.98 0.03 210);
+  --violet: oklch(0.68 0.15 295);
+  --warn: oklch(0.78 0.15 72);
+
+  --glow-core: 0 0 60px color-mix(in oklab, var(--core) 45%, transparent);
+  --glow-soft: 0 0 24px color-mix(in oklab, var(--core) 22%, transparent);
+  --shadow-glass:
+    0 24px 60px -20px oklch(0.05 0.02 260 / 80%),
+    inset 0 1px 0 color-mix(in oklab, var(--hud) 12%, transparent);
+  --gradient-veil: radial-gradient(
+    120% 90% at 50% 42%,
+    color-mix(in oklab, var(--core) 12%, transparent) 0%,
+    transparent 62%
+  );
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(130%);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility hud-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hud-dim);
+}
+
+@utility hud-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  color: var(--hud);
+}
+
+@utility core-glow {
+  box-shadow: var(--glow-core);
+}

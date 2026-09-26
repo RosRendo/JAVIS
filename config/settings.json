@@ -1,0 +1,46 @@
+{
+  "assistant_name": "Jarvis",
+  "wake_word": "hey jarvis",
+  "always_listen": true,
+  "ai": {
+    "provider": "deepseek",
+    "providers": {
+      "ollama": {
+        "url": "http://localhost:11434",
+        "model": "llama3.2"
+      },
+      "openai": {
+        "api_key": "",
+        "model": "gpt-4o-mini"
+      },
+      "gemini": {
+        "api_key": "",
+        "model": "gemini-3.5-flash"
+      },
+      "anthropic": {
+        "api_key": "",
+        "model": "claude-3-haiku-20240307"
+      },
+      "deepseek": {
+        "api_key": "",
+        "model": "deepseek-v4-flash"
+      }
+    }
+  },
+  "stt": {
+    "provider": "google",
+    "faster_whisper_model_size": "base"
+  },
+  "tts": {
+    "provider": "pyttsx3",
+    "voice_index": 1,
+    "rate_offset": -50,
+    "volume_offset": 0.25
+  },
+  "memory": {
+    "db_path": "data/jarvis.db"
+  },
+  "obsidian": {
+    "vault_path": "D:\\\\AI\\\\Obsidian"
+  }
+}
