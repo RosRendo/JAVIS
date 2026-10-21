@@ -2,7 +2,8 @@ import React, { memo, useState, useEffect, useRef } from 'react';
 import {
   motion, AnimatePresence,
   useMotionValue, useMotionValueEvent,
-  useSpring, useTransform
+  useSpring, useTransform,
+  type MotionValue
 } from 'framer-motion';
 import { Mic, MicOff, Minus, Settings, Shield, X, ChevronLeft, ChevronRight, ArrowUp } from 'lucide-react';
 
@@ -123,7 +124,7 @@ function Backdrop({ intensity }: { intensity: number }) {
 /* ─────────────────────────────────────────
    CIRCULAR SPECTRUM — faithful port
 ───────────────────────────────────────── */
-const Spectrum = memo(function Spectrum({ amplitude, active }: { amplitude: ReturnType<typeof useMotionValue>; active: boolean }) {
+const Spectrum = memo(function Spectrum({ amplitude, active }: { amplitude: MotionValue<number>; active: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const level = useRef(0);
   useMotionValueEvent(amplitude, 'change', v => { level.current = v as number; });
@@ -213,7 +214,7 @@ const Orbiters = memo(function Orbiters({ speed }: { speed: number }) {
 /* ─────────────────────────────────────────
    AI CORE — faithful port
 ───────────────────────────────────────── */
-function AICore({ state, amplitude, onClick }: { state: JarvisState; amplitude: ReturnType<typeof useMotionValue>; onClick: () => void }) {
+function AICore({ state, amplitude, onClick }: { state: JarvisState; amplitude: MotionValue<number>; onClick: () => void }) {
   const p = PRESET[state];
   const raw = useMotionValue(0);
   useMotionValueEvent(amplitude, 'change', v => raw.set(v as number));
@@ -634,7 +635,7 @@ function SystemPanel({ sys, wsConnected }: { sys: SystemStatus; wsConnected: boo
 /* ─────────────────────────────────────────
    MINI WAVE — exact from CommandInput
 ───────────────────────────────────────── */
-function MiniWave({ amplitude, active }: { amplitude: ReturnType<typeof useMotionValue>; active: boolean }) {
+function MiniWave({ amplitude, active }: { amplitude: MotionValue<number>; active: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const lvl = useRef(0);
   useMotionValueEvent(amplitude, 'change', v => { lvl.current = v as number; });
@@ -682,7 +683,7 @@ const PLACEHOLDER: Record<JarvisState, string> = {
 };
 
 function CommandInput({ state, amplitude, micActive, onToggleMic, onSubmit }: {
-  state: JarvisState; amplitude: ReturnType<typeof useMotionValue>;
+  state: JarvisState; amplitude: MotionValue<number>;
   micActive: boolean; onToggleMic: () => void; onSubmit: (text: string) => void;
 }) {
   const [value, setValue] = useState('');
