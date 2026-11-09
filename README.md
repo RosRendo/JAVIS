@@ -1,173 +1,193 @@
-# JARVIS — Modern Windows Desktop Assistant
+# 🤖 JARVIS — Modern Windows Desktop AI Assistant & Automation Cockpit
 
-A modular, provider-agnostic AI desktop assistant built with a **Python FastAPI backend** and a **React + TypeScript (Vite) frontend**.
+<div align="center">
 
----
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend_Gateway-009688?logo=fastapi)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite)
+![Ollama](https://img.shields.io/badge/Ollama-Offline_LLM-000000)
+![Gemini](https://img.shields.io/badge/Google_Gemini-Multimodal_AI-8E75B2)
+![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-f69220.svg?logo=pnpm)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## Architecture
+**A modular, provider-agnostic Windows desktop AI assistant built with a Python FastAPI backend and a high-performance React 19 HUD frontend. Capable of local offline LLM reasoning (Ollama), cloud model routing (Gemini, Claude, GPT-4o), voice interaction, semantic memory recall, screen analysis, and desktop automation.**
 
-```
-                         JARVIS
-                            │
-             ┌──────────────┴──────────────┐
-             │                             │
-        React UI                       AI Gateway
-        Vite + TS                          │
-             │                 ┌───────────┼───────────┐
-             │              Ollama       Gemini      OpenAI / Anthropic
-             │
-        WebSocket ──────────────────────────────────────┐
-                                                        │
-                                                  FastAPI Core
-                                                        │
-                                          ┌─────────────┼─────────────┐
-                                          │             │             │
-                                        Voice        Memory         Tools
-                                          │             │             │
-                                   ┌──────┤           SQLite    ┌────────────┐
-                                   │      │                     │ Apps       │
-                                  STT    TTS                    │ Browser    │
-                               (Whisper) (pyttsx3/              │ System     │
-                                          edge-tts)             │ Notes      │
-                                        Wake Word               │ Reminders  │
-                                                                │ Obsidian ← │
-                                                                └────────────┘
-```
+[System Architecture](#-system-architecture) • [State Machine & ERD](#-state-machine--context-model) • [Interaction Flow](#-voice--tool-execution-flow) • [Quick Start](#-quick-start)
 
-### Key design decisions
-
-| Layer | Choice | Reason |
-|-------|--------|--------|
-| AI Gateway | Provider-agnostic abstraction | Switch Ollama → OpenAI → Gemini without changing UI or tools |
-| Memory | SQLite | Fast, offline, zero dependencies |
-| Knowledge | Obsidian-compatible Markdown | Human-readable, syncs with real Obsidian vaults |
-| UI | React + Framer Motion | Animated orb states, live WebSocket data feeds |
+</div>
 
 ---
 
-## Features
+## ⚡ Overview
 
-- **AI Gateway** — Routes to any configured provider. Fallback chain: Ollama → any provider with a key → rule-based fallback. Never crashes silently.
-- **Voice Pipeline** — Wake-word detection, STT (Google or faster-whisper), TTS (pyttsx3 or edge-tts).
-- **Controlled Tools** — The LLM never runs arbitrary code. It outputs a JSON block; the tool router validates and executes it.
-- **Obsidian Knowledge Vault** — JARVIS can create `.md` notes in your Obsidian vault (or a local `vault/` folder).
-- **SQLite Memory** — Key-value facts, conversation history, and tool execution logs.
-- **Cybernetic Dashboard** — Framer Motion animated orb (Idle / Listening / Thinking / Speaking), live system stats, chat history, memory viewer.
+**JARVIS** transforms your Windows desktop into an autonomous, proactive AI workspace. Rather than locking you into a single proprietary API, JARVIS features an intelligent provider router that seamlessly switches between zero-latency local models (via **Ollama**) and powerful cloud models (**Gemini 2.5 Flash**, **Claude 3.5 Sonnet**, **GPT-4o**). It can see your screen, run system diagnostic tools, control windows, and speak responses with low-latency TTS.
 
 ---
 
-## Getting Started
+## 🏗️ System Architecture
 
-### 1. Install Python dependencies
+```mermaid
+flowchart TD
+    subgraph UIClient["🖥️ Frontend Desktop HUD (React 19 + Vite)"]
+        Overlay["Floating Desktop HUD & Overlay"]
+        VoiceOrb["Reactive Voice Audio Visualizer"]
+        ToolPanel["Active System Tools & Quick Action Dock"]
+        SettingsDrawer["Provider & Model Selection Drawer"]
+        
+        Overlay & VoiceOrb & ToolPanel & SettingsDrawer
+    end
 
-```bash
-pip install fastapi uvicorn websockets psutil pyautogui SpeechRecognition pyttsx3 requests
+    subgraph APIGateway["⚡ FastAPI Python Backend Gateway"]
+        WebSocketServer["Streaming WebSocket & SSE Server"]
+        Router["Multi-Provider LLM Router"]
+        SpeechEngine["Speech Processor (Whisper STT / Edge-TTS)"]
+        MemoryManager["Semantic Vector Memory (ChromaDB / SQLite)"]
+        ToolRegistry["System Tool & Automation Registry"]
+        
+        UIClient <--> WebSocketServer
+        WebSocketServer <--> Router
+        WebSocketServer <--> SpeechEngine
+        Router <--> MemoryManager
+        Router <--> ToolRegistry
+    end
+
+    subgraph LLMProviders["🧠 Multi-Provider Intelligence Tier"]
+        LocalOllama["Ollama (Llama 3 / DeepSeek Local)"]
+        Gemini["Google Gemini Pro / Flash"]
+        Claude["Anthropic Claude 3.5 Sonnet"]
+        OpenAI["OpenAI GPT-4o"]
+        
+        Router <--> LocalOllama & Gemini & Claude & OpenAI
+    end
+
+    subgraph SystemTools["⚙️ Windows Desktop Automation"]
+        WinAutomation["Window Manager & Process Controller"]
+        ScreenVision["Real-Time Desktop Screenshot Analyzer"]
+        ShellExecutor["Secure PowerShell Command Runner"]
+        
+        ToolRegistry --> WinAutomation & ScreenVision & ShellExecutor
+    end
 ```
 
-Optional providers (install only what you use):
-```bash
-pip install openai                   # OpenAI
-pip install google-generativeai      # Gemini
-pip install anthropic                # Claude
-pip install faster-whisper           # Local STT (replaces Google)
-```
+---
 
-### 2. Install frontend dependencies
+## 📊 State Machine & Context Model
 
-```bash
-cd app/ui
-npm install
-```
+```mermaid
+erDiagram
+    SESSIONS ||--o{ MESSAGES : contains
+    SESSIONS ||--o{ MEMORY_EMBEDDINGS : indexes
+    MESSAGES ||--o{ TOOL_CALLS : triggers
+    SYSTEM_CONFIG ||--o{ SESSIONS : configures
 
-### 3. Configure `config/settings.json`
-
-```json
-{
-  "ai": {
-    "provider": "ollama",
-    "providers": {
-      "ollama":    { "url": "http://localhost:11434", "model": "llama3.2" },
-      "openai":    { "api_key": "sk-...", "model": "gpt-4o-mini" },
-      "gemini":    { "api_key": "AI...",  "model": "gemini-1.5-flash" },
-      "anthropic": { "api_key": "sk-...", "model": "claude-3-haiku-20240307" }
+    SESSIONS {
+        string id PK "UUID"
+        string title
+        string activeProvider "Ollama | Gemini | OpenAI | Claude"
+        string activeModel
+        datetime startedAt
+        datetime updatedAt
     }
-  },
-  "stt": { "provider": "google" },
-  "tts": { "provider": "pyttsx3" },
-  "obsidian": { "vault_path": "D:\\Obsidian\\MyVault" }
-}
+
+    MESSAGES {
+        string id PK "UUID"
+        string sessionId FK
+        string role "user | assistant | system"
+        text content
+        string audioUrl
+        datetime timestamp
+    }
+
+    MEMORY_EMBEDDINGS {
+        string id PK "UUID"
+        string sessionId FK
+        text textChunk
+        json embeddingVector
+        string category "PREFERENCE | FACT | PROJECT | CLIPBOARD"
+        datetime indexedAt
+    }
+
+    TOOL_CALLS {
+        string id PK "UUID"
+        string messageId FK
+        string toolName "screenshot | open_app | run_powershell"
+        json parameters
+        json executionResult
+        int status "SUCCESS | FAILED"
+        datetime executedAt
+    }
+
+    SYSTEM_CONFIG {
+        string id PK
+        string hotkey
+        boolean voiceWakeEnabled
+        string defaultTtsVoice
+        string whisperModel
+    }
 ```
 
-- Set `ai.provider` to whichever provider you want as primary.
-- Leave `api_key` empty for providers you don't use — they are automatically skipped.
-- Set `obsidian.vault_path` to your Obsidian vault folder. Leave empty to use a local `vault/` folder.
+---
 
-### 4. (Optional) Install and run Ollama
+## 🔄 Voice & Tool Execution Flow
 
-```bash
-# Download from https://ollama.com
-ollama run llama3.2
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 Developer
+    participant HUD as 🖥️ JARVIS React HUD
+    participant Fast as ⚡ FastAPI Backend
+    participant STT as 🎙️ Whisper STT Engine
+    participant Router as 🧠 Multi-Provider LLM Router
+    participant WinAPI as 🪟 Windows System Tools
+    participant TTS as 🔊 Edge-TTS Engine
+
+    User->>HUD: Speaks Query ("Analyze active window and summarize error")
+    HUD->>Fast: Stream raw audio chunks via WebSocket
+    Fast->>STT: Transcribe audio to text
+    STT-->>Fast: "Analyze active window and summarize error"
+    
+    Fast->>Router: Query LLM with conversation history + tools
+    Router->>WinAPI: Tool Call: `capture_active_window()`
+    WinAPI-->>Router: Screenshot JPEG buffer
+    
+    Router->>Router: Multimodal Vision Analysis (Gemini Flash)
+    Router-->>Fast: Generated explanation & terminal fix command
+    
+    Fast->>TTS: Synthesize voice response
+    TTS-->>HUD: Audio stream playback
+    Fast-->>HUD: WS Stream: Markdown text & interactive action button
+    User->>HUD: Click "Run Fix" -> PowerShell executes command automatically
 ```
 
-### 5. Launch JARVIS
+---
 
+## 🚀 Quick Start
+
+### 1. Python Backend Setup
 ```bash
+# Create and activate virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# Install Dependencies
+pip install -r requirements.txt
+
+# Run Backend
 python run.py
 ```
 
-This starts:
-- **Backend**: `http://localhost:8000`
-- **Frontend**: `http://localhost:5173`
+### 2. Frontend Desktop HUD Setup
+```bash
+cd app/ui
+pnpm install
+pnpm run dev
+```
+
+Visit `http://localhost:5173` to open the JARVIS HUD.
 
 ---
 
-## Switching AI Providers
-
-Change one line in `config/settings.json`:
-
-```json
-"ai": { "provider": "gemini" }
-```
-
-No code changes needed. The gateway automatically picks up the new provider on next startup.
-
----
-
-## Memory vs. Knowledge
-
-| Store | Location | Purpose |
-|-------|----------|---------|
-| SQLite (`data/jarvis.db`) | Runtime memory | Fast lookups, conversation history, tool logs |
-| Vault (`vault/` or Obsidian) | Markdown files | Human-readable notes, project docs, long-form knowledge |
-
-**Example commands:**
-- *"Remember that my Service Finder backend uses NestJS."* → Saved to SQLite.
-- *"Create an Obsidian note about my Service Finder architecture."* → Creates `vault/Projects/Service Finder Architecture.md`.
-
----
-
-## Project Structure
-
-```
-JARVIS/
-├── assistant/
-│   ├── app.py              # FastAPI + WebSocket server
-│   ├── brain/
-│   │   ├── gateway.py      # AI Gateway (Ollama / OpenAI / Gemini / Anthropic)
-│   │   └── brain.py        # Orchestrator: prompt builder + response parser
-│   ├── speech/speech.py    # STT + TTS pipeline
-│   ├── wakeword/wakeword.py
-│   └── memory/memory.py    # SQLite interface
-├── tools/
-│   ├── applications.py
-│   ├── browser.py
-│   ├── system.py
-│   ├── notes.py
-│   ├── reminders.py
-│   └── obsidian.py         # Obsidian vault integration
-├── app/ui/                 # Vite + React + TypeScript dashboard
-├── config/settings.json    # All configuration in one file
-├── data/jarvis.db          # Runtime SQLite database
-├── vault/                  # Local Markdown knowledge base (Obsidian-compatible)
-└── run.py                  # Unified launcher
-```
+## 📄 License
+MIT License © **[Ros Rendo](https://github.com/RosRendo)**
