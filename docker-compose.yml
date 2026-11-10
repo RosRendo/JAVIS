@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  jarvis_backend:
+    build:
+      context: ./
+      dockerfile: assistant/Dockerfile
+    container_name: jarvis_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+    volumes:
+      - ./data:/app/data
+    networks:
+      - jarvis_network
+
+  jarvis_ui:
+    build:
+      context: ./app/ui
+      dockerfile: Dockerfile
+    container_name: jarvis_ui
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - jarvis_backend
+    networks:
+      - jarvis_network
+
+networks:
+  jarvis_network:
+    driver: bridge
